@@ -6,12 +6,6 @@ const OtherUsers = () => {
     <div className='overflow-auto flex-1'>
             
                         <OtherUser />
-                        <OtherUser />
-                        <OtherUser />
-                        <OtherUser />
-                        <OtherUser />
-                        <OtherUser />
-                        <OtherUser />
                  
             
             
