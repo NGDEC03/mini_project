@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import spacy
 import random
 import pytesseract
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -9,7 +8,13 @@ import re
 import pdfplumber
 from PIL import Image
 
-nlp = spacy.load("en_core_web_sm")
+import spacy
+import subprocess
+try:
+    nlp = spacy.load("en_core_web_sm")
+except OSError:
+    subprocess.run(["python", "-m", "spacy", "download", "en_core_web_sm"])
+    nlp = spacy.load("en_core_web_sm")
 
 def extract_text_from_image(image_path):
     image = Image.open(image_path)
