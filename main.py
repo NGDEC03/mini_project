@@ -1,81 +1,11 @@
 import streamlit as st
 import pandas as pd
-import random
-import pytesseract
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
-import re
+from utils.text_extraction import extract_text_from_image
+from utils.text_anonymization import anonymize_text
+from utils.resume_parser import extract_candidate_name, parse_resume
+from utils.similarity_calculator import compute_similarity
+from utils.interview_questions import generate_interview_questions
 import pdfplumber
-from PIL import Image
-
-import spacy
-import subprocess
-try:
-    nlp = spacy.load("en_core_web_sm")
-except OSError:
-    subprocess.run(["python", "-m", "spacy", "download", "en_core_web_sm"])
-    nlp = spacy.load("en_core_web_sm")
-
-def extract_text_from_image(image_path):
-    image = Image.open(image_path)
-    return pytesseract.image_to_string(image)
-
-def anonymize_text(text):
-    text = re.sub(r'\b(\w+\.\w+@\w+\.\w+)\b', 'email_removed', text)
-    text = re.sub(r'\b\d{10}\b', 'phone_removed', text)
-    return text
-
-def extract_candidate_name(text):
-    doc = nlp(text)
-    for ent in doc.ents:
-        if ent.label_ == "PERSON":
-            return ent.text
-    return "Unknown Candidate"
-
-def parse_resume(text):
-    doc = nlp(text)
-    skills = []
-    experience = []
-    education = []
-
-    skill_keywords = ["Python", "JavaScript", "Machine Learning", "React", "Django", "SQL", "C++", "Java"]
-    for token in doc:
-        if token.text in skill_keywords:
-            skills.append(token.text)
-
-    experience_pattern = re.compile(r"\b(\d{4})\s*-\s*(\d{4}|Present)\b")
-    for match in experience_pattern.finditer(text):
-        experience.append(match.group())
-
-    education_keywords = ["B.Tech", "B.E", "MCA", "MBA"]
-    for sent in doc.sents:
-        if any(edu in sent.text for edu in education_keywords):
-            education.append(sent.text)
-
-    return {
-        "skills": list(set(skills)),
-        "experience": experience,
-        "education": education,
-    }
-
-def compute_similarity(resume_text, job_description):
-    documents = [resume_text, job_description]
-    tfidf_vectorizer = TfidfVectorizer(stop_words="english")
-    tfidf_matrix = tfidf_vectorizer.fit_transform(documents)
-    return cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:2])[0][0]
-
-def generate_interview_questions(skills):
-    questions = []
-    num_questions = 5
-
-    for skill in skills:
-        questions.append(f"Can you walk me through a project where you effectively utilized {skill}?")
-        questions.append(f"What are some common challenges you’ve faced when working with {skill}, and how did you resolve them?")
-        questions.append(f"How would you rate your proficiency in {skill}, and how have you improved it over time?")
-        questions.append(f"Can you provide an example of using {skill} to solve a complex problem?")
-        questions.append(f"How do you stay up-to-date with the latest trends and updates in {skill}?")
-
-    return random.sample(questions, num_questions)
 
 st.title("AI-Based Resume Screening Tool")
 
